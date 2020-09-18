@@ -1,0 +1,69 @@
+﻿@page "/bufferstatus"
+
+@using System.Net.Http
+@using System.Collections.Generic
+@using Newtonsoft.Json
+@using BlazorServer.Data
+@inject IHttpBufferAPI HttpBuffer
+@inject IHttpManagerAPI HttpManager
+<h1>BufferStatus</h1>
+<p>This component is for buffer status view.</p>
+
+@if (bufferStatus == null)
+{
+    <p><em>Can Not Connect to Manager...    Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>暂存工位序号</th>
+                <th>暂存工位数据库状态</th>
+                <th>暂存工位实时状态</th>
+                <th>暂存工位资产</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bufferS in bufferStatus)
+            {
+                <tr>
+                    <td>@bufferS.bufferStationId</td>
+                    <td>@bufferS.bufferStationStatus.ToString()</td>
+                    <td>@bufferS.bufferStationRealTimeStatus.ToString()</td>
+                    <td>@bufferS.bufferStationAsset</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code
+{
+    private List<BufferData> bufferStatus = new List<BufferData>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var bufferResponse = HttpBuffer.GetBufferRealTimeStatus();
+        var managerResponse = HttpManager.GetBufferRepositoryStatus();
+        for (int i = 0; i < bufferResponse.Count; i++)
+        {
+            BufferData tempData = new BufferData
+            {
+                bufferStationId = "暂存" + i.ToString() + "工位",
+                bufferStationStatus = bufferResponse[i],
+                bufferStationRealTimeStatus = i < 10 ? managerResponse[i] : false,
+                bufferStationAsset = null
+            };
+            bufferStatus.Add(tempData);
+        }
+    }
+
+    public class BufferData
+    {
+        public string bufferStationId { get; set; }
+        public bool bufferStationStatus { get; set; }
+        public bool bufferStationRealTimeStatus { get; set; }
+        public string bufferStationAsset { get; set; }
+    }
+}
