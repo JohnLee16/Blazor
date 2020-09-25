@@ -6,7 +6,7 @@
 @using BlazorServer.Data
 @inject IHttpBufferAPI HttpBuffer
 @inject IHttpManagerAPI HttpManager
-<h1>BufferStatus</h1>
+<h1>暂存区状态</h1>
 <p>This component is for buffer status view.</p>
 
 @if (bufferStatus == null)
@@ -29,8 +29,8 @@ else
             {
                 <tr>
                     <td>@bufferS.bufferStationId</td>
-                    <td>@bufferS.bufferStationStatus.ToString()</td>
-                    <td>@bufferS.bufferStationRealTimeStatus.ToString()</td>
+                    <td>@(bufferS.bufferStationStatus ? "空置" : "占用")</td>
+                    <td>@(bufferS.bufferStationRealTimeStatus ? "空置" : "占用")</td>
                     <td>@bufferS.bufferStationAsset</td>
                 </tr>
             }
@@ -46,14 +46,15 @@ else
     {
         var bufferResponse = HttpBuffer.GetBufferRealTimeStatus();
         var managerResponse = HttpManager.GetBufferRepositoryStatus();
+        //var bufferAsset = HttpManager.GetBufferAsset();
         for (int i = 0; i < bufferResponse.Count; i++)
         {
             BufferData tempData = new BufferData
             {
-                bufferStationId = "暂存" + i.ToString() + "工位",
-                bufferStationStatus = bufferResponse[i],
-                bufferStationRealTimeStatus = i < 10 ? managerResponse[i] : false,
-                bufferStationAsset = null
+                bufferStationId = "暂存" + (i + 1).ToString() + "工位",
+                bufferStationRealTimeStatus = bufferResponse[i],
+                bufferStationStatus = i < 9 ? managerResponse[i] : false,
+                bufferStationAsset = null//i < 9 ? bufferAsset[i] : null
             };
             bufferStatus.Add(tempData);
         }

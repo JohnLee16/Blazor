@@ -7,6 +7,7 @@ namespace BlazorServer.Data
     {
         HttpClient ApiClient { get; }
 
+        List<string> GetBufferAsset();
         List<bool> GetBufferRepositoryStatus();
         List<bool> GetQCSliceData();
     }

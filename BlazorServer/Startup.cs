@@ -11,6 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorServer.Data;
 using System.Net.Http;
+using Blazored.Toast.Services;
+using Blazored.Toast;
+using Microsoft.AspNetCore.Http;
 
 namespace BlazorServer
 {
@@ -32,6 +35,9 @@ namespace BlazorServer
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<IHttpBufferAPI, HttpBufferAPI>();
             services.AddSingleton<IHttpManagerAPI, HttpManagerAPI>();
+            services.AddSingleton<IHttpControllerAPI, HttpControllerAPI>();
+            services.AddBlazoredToast();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddOptions();
             services.Configure<AacQCWebSettings>(Configuration);
             //services.AddHttpClient("QCManager", client =>

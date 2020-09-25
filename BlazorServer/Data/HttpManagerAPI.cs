@@ -63,7 +63,24 @@ namespace BlazorServer.Data
                 }
                 else
                 {
-                    throw new Exception("Cannot get buffer status from manager!");
+                    throw new Exception("Cannot get qc slices from manager!");
+                }
+            }
+        }
+
+        public List<string> GetBufferAsset()
+        {
+            using (var response = _httpClient.GetAsync("/api/v1/BufferStation/GetAssetInBuffer").GetAwaiter().GetResult())
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    var bufferAssetString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    List<string> asset = JsonConvert.DeserializeObject<List<string>>(bufferAssetString);
+                    return asset;
+                }
+                else
+                {
+                    throw new Exception("Cannot get buffer asset from manager!");
                 }
             }
         }

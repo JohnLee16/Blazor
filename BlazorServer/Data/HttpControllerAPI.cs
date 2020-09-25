@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Net.Http;
+using BlazorServer.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -9,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace BlazorServer.Data
 {
-    public class HttpControllerAPI
+    public class HttpControllerAPI : IHttpControllerAPI
     {
         private HttpClient _httpClient;
         private AacQCWebSettings _settings;
@@ -36,19 +37,18 @@ namespace BlazorServer.Data
             _httpClient.DefaultRequestHeaders.Accept.Clear();
         }
 
-        public List<bool> GetQCControllerData()
+        public List<AacQcCheckData> GetQCControllerData(string hours)
         {
-            using (var response = _httpClient.GetAsync("/api/v1/AacQcController/GetBufferRepositoryStatus").GetAwaiter().GetResult())
+            using (var response = _httpClient.GetAsync("/api/v1/AacQcProducts/GetAllSlices/" + hours).GetAwaiter().GetResult())
             {
                 if (response.IsSuccessStatusCode)
                 {
-                    var bufferStatus = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    var bufferStatusReturn = JsonConvert.DeserializeObject<List<bool>>(bufferStatus);
-                    return bufferStatusReturn;
+                    var aacQCData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    return JsonConvert.DeserializeObject<List<AacQcCheckData>>(aacQCData);
                 }
                 else
                 {
-                    throw new Exception("Cannot get buffer status from manager!");
+                    throw new Exception("Cannot get slice status from manager!");
                 }
             }
         }
