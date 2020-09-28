@@ -12,9 +12,13 @@
 @using Blazored
 @using Blazored.Toast.Services
 @using Microsoft.AspNetCore.Http
+@using System.Net.Http.Headers;
+@using Microsoft.AspNetCore.Mvc.Controllers
+@inject IJSRuntime _iJSRuntime
 @inject IHttpControllerAPI _controllerAPI
 @inject IToastService _toastService
 @inject IHttpContextAccessor _httpContext
+
 <h3>QC 数据查看</h3>
 
 <EditForm Model="searchModel" OnValidSubmit="@HandleValidSubmit">
@@ -59,7 +63,9 @@
 
 <button class="btn btn-primary" @onclick="ExportQCListToExcel">导出为Excel</button>
 @code {
+
     SearchModel searchModel = new SearchModel();
+    private HttpContext httpContext => _httpContext.HttpContext;
     private List<AacQcCheckData> qcSlicesData = new List<AacQcCheckData>();
     private void HandleValidSubmit()
     {
@@ -170,48 +176,66 @@
         fileStream.Dispose();
 
         worksheet.Dispose();
-        package.Dispose();
+        //package.Dispose();
 
         //string textStrings = package.ToString();
         //调用下面的方法输出到浏览器下载
-        OutputClient(bytes);
+        OutputClient(savePath, bytes);
 
-        worksheet.Dispose();
-        package.Dispose();
+        //worksheet.Dispose();
+        //package.Dispose();
         _toastService.ShowSuccess("导出Excel成功!!");
     }
 
-    public void OutputClient(byte[] bytes)
+    public void OutputClient(string fileString, byte[] bytes)
     {
-
-        HttpResponse response = _httpContext.HttpContext.Response;
+        AacQcData aacQcData = new AacQcData();
+        aacQcData.GenerateExcel(_iJSRuntime);
+        Microsoft.AspNetCore.Mvc.FileStreamResult();
+        //_httpContext.HttpContext.Response.ContentType = "application/x-download";
+        //_httpContext.HttpContext.Response.Headers.Add("Content-Disposition", "attachment; filename=" + System.IO.Path.GetFileName(fileString));
+        //_httpContext.HttpContext.Response.Clear();
+        //_httpContext.HttpContext.Response.WriteAsync(fileString);
+        //_httpContext.HttpContext.Response.Body.Dispose();
         //var write = response.BodyWriter;
-
+        //httpContext.Response.OnStarting(() =>
+        //{
+        //    httpContext.Response.Headers.Clear();
+        //    httpContext.Response.Headers.Add("Content-Disposition", string.Format("attachment; filename={0}.xlsx", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")));
+        //    httpContext.Response.Headers.Append("Content-Type", "text/html; charset=GB2312");
+        //    return Task.FromResult(0);
+        //});
         //response.StartAsync();
 
-        //response.Headers.Clear();
+
         //response.ClearHeaders();
         //response.ClearContent();
 
         //response.ContentType = "application/ms-excel";
-
+        //response.OnStarting();
         //response.AppendHeader("Content-Type", "text/html; charset=GB2312");
         //response.AddHeader("Content-Disposition", string.Format("attachment; filename={0}.xlsx", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")));
-        response.Headers.Add("Content-Disposition", string.Format("attachment; filename={0}.xlsx", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")));
-        response.Headers.Append("Content-Type", "text/html; charset=GB2312");
+        //httpContext.Response.Headers.Add("Content-Disposition", string.Format("attachment; filename={0}.xlsx", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")));
+        //httpContext.Response.Headers.Append("Content-Type", "text/html; charset=GB2312");
         //response.Charset = "GB2312";
         //response.ContentEncoding = Encoding.GetEncoding("GB2312");
-        response.ContentType = "application/vnd.openxmlformats - officedocument.spreadsheetml.sheet";
+        //httpContext.Response.ContentType = "application/vnd.openxmlformats - officedocument.spreadsheetml.sheet";
 
-        foreach (var b in bytes)
-        {
-            response.Body.WriteByte(b);
-        }
-        //AsyncCallback asyncCallback;
-        //response.Body.BeginWrite(bytes, 0, int.MaxValue); //WriteAsync(textString).GetAwaiter();
-        //response.BinaryWrite(bytes);
-        response.Body.Flush();
+        //foreach (var b in bytes)
+        //{
+        //    httpContext.Response.Body.WriteByte(b);
+        //}
+        ////AsyncCallback asyncCallback;
+        ////response.Body.BeginWrite(bytes, 0, int.MaxValue); //WriteAsync(textString).GetAwaiter();
+        ////response.BinaryWrite(bytes);
+        //httpContext.Response.Body.Flush();
 
-        response.Body.Dispose();
+        //httpContext.Response.Body.Dispose();
+    }
+
+    public ActionResult OnPostDownloadFile()
+    {
+        return File("/DownloadableFiles/TestFile34.csv", "application/octet-stream",
+                    "NewName34.csv");
     }
 }

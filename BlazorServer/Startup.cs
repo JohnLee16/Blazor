@@ -31,6 +31,7 @@ namespace BlazorServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddMvc();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
             services.AddSingleton<IHttpBufferAPI, HttpBufferAPI>();
@@ -40,6 +41,7 @@ namespace BlazorServer
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddOptions();
             services.Configure<AacQCWebSettings>(Configuration);
+            
             //services.AddHttpClient("QCManager", client =>
             //        client.BaseAddress = new Uri("http://localhost:5001"));
         }

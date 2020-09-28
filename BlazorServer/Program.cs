@@ -30,6 +30,7 @@ namespace BlazorServer
                     //    opt.Listen(IPAddress.Loopback, port: 5050);
                     //    opt.ListenAnyIP(5050);
                     //});
+                    
                     webBuilder.ConfigureKestrel(options =>
                     {
                         options.Listen(IPAddress.Any, 5050, listenOptions =>
