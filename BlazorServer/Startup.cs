@@ -14,6 +14,7 @@ using System.Net.Http;
 using Blazored.Toast.Services;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Http;
+using Microsoft.JSInterop;
 
 namespace BlazorServer
 {

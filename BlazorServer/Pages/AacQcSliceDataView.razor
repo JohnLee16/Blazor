@@ -175,23 +175,26 @@
         fileStream.Close();
         fileStream.Dispose();
 
-        worksheet.Dispose();
+        //worksheet.Dispose();
         //package.Dispose();
 
         //string textStrings = package.ToString();
         //调用下面的方法输出到浏览器下载
         OutputClient(savePath, bytes);
 
-        //worksheet.Dispose();
-        //package.Dispose();
+        worksheet.Dispose();
+        package.Dispose();
         _toastService.ShowSuccess("导出Excel成功!!");
     }
 
     public void OutputClient(string fileString, byte[] bytes)
     {
-        AacQcData aacQcData = new AacQcData();
-        aacQcData.GenerateExcel(_iJSRuntime);
-        Microsoft.AspNetCore.Mvc.FileStreamResult();
+        _iJSRuntime.InvokeAsync<object>(
+            "SaveAsFile",
+            "AacQcRecordList.xlsx",
+            Convert.ToBase64String(bytes)
+            );
+        //Microsoft.AspNetCore.Mvc.FileStreamResult();
         //_httpContext.HttpContext.Response.ContentType = "application/x-download";
         //_httpContext.HttpContext.Response.Headers.Add("Content-Disposition", "attachment; filename=" + System.IO.Path.GetFileName(fileString));
         //_httpContext.HttpContext.Response.Clear();
@@ -231,11 +234,5 @@
         //httpContext.Response.Body.Flush();
 
         //httpContext.Response.Body.Dispose();
-    }
-
-    public ActionResult OnPostDownloadFile()
-    {
-        return File("/DownloadableFiles/TestFile34.csv", "application/octet-stream",
-                    "NewName34.csv");
     }
 }
