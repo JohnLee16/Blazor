@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Net.Http;
+using System.Net.Http.Json;
 using BlazorServer.Models;
-using Microsoft.Extensions.Configuration;
+using Chilkat;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-
 
 namespace BlazorServer.Data
 {
@@ -48,9 +47,36 @@ namespace BlazorServer.Data
                 }
                 else
                 {
-                    throw new Exception("Cannot get slice status from manager!");
+                    throw new Exception("Cannot get slice status from controller!");
                 }
             }
+        }
+
+        public string GetQCControllerGreencake()
+        {
+            using (var response = _httpClient.GetAsync("/api/v1/AacQcProducts/GetQcGreencakeId").GetAwaiter().GetResult())
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    return response.Content.ReadAsStringAsync().GetAwaiter().GetResult();                    
+                }
+                else
+                {
+                    throw new Exception("Cannot get greencakeId from controller!");
+                }
+            }
+        }
+
+        public async void SendRelocateIntegrationEvent(RelocatedSliceModel relocatedSliceModel)
+        {
+            var response = await _httpClient.PostAsJsonAsync<RelocatedSliceModel>("/api/v1/AacQcProducts/RelocateIntegrationEventPublish", relocatedSliceModel);
+            return;
+        }
+
+        public async void SendToBufferIntegrationEvent(SendBufferModel sendBufferModel)
+        {
+            var response = await _httpClient.PostAsJsonAsync<SendBufferModel>("/api/v1/AacQcProducts/SendToBufferIntegrationEventPublish", sendBufferModel);
+            return;
         }
     }
 }

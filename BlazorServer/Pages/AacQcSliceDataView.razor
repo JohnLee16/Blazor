@@ -11,9 +11,11 @@
 @using Blazored.Toast
 @using Blazored
 @using Blazored.Toast.Services
+@using System.Globalization;
 @using Microsoft.AspNetCore.Http
 @using System.Net.Http.Headers;
 @using Microsoft.AspNetCore.Mvc.Controllers
+@using CsvHelper
 @inject IJSRuntime _iJSRuntime
 @inject IHttpControllerAPI _controllerAPI
 @inject IToastService _toastService
@@ -26,8 +28,8 @@
     <ValidationSummary />
 
     <InputText id="hours" @bind-Value="searchModel.Hours" />
-    <text>输入时间：单位： /小时</text>
-    <button type="submit">查找</button>
+    <text class="col-form-label-lg">输入时间：单位： /小时</text>
+    <button type="submit" class="btn btn-primary">查找</button>
 </EditForm>
 
 
@@ -83,10 +85,28 @@
     private void ExportQCListToExcel()
     {
         string fileName = "QCList" + DateTime.Now.ToString().Replace("/", "").Replace(" ", "").Replace(":", "") + ".xlsx";
+        string csvFileName = "QCList" + DateTime.Now.ToString().Replace("/", "").Replace(" ", "").Replace(":", "") + ".csv";
         string path = Directory.GetCurrentDirectory();
         string savePath = path + "\\" + fileName;
-
+        string saveCsvPath = path + "\\" + csvFileName;
         FileStream fileStream = new FileStream(savePath, FileMode.CreateNew);
+        FileStream csvFileStream = new FileStream(saveCsvPath, FileMode.CreateNew);
+        var records = new List<ExcelModels>();
+        foreach (var greencake in qcSlicesData)
+        {
+            foreach (var slice in greencake.Slices)
+            {
+                records.Add(new ExcelModels { MouldId = greencake.GreencakeId, WallId = slice.wallId, SliceId = slice.slicesId, QcResult = slice.qcResult, FailureReason = null, QcTime = greencake.AacQcTime});
+            }
+        }
+        using (var writeFile = new StreamWriter(csvFileStream, leaveOpen: true))
+        {
+            var csv = new CsvWriter(writeFile, CultureInfo.InvariantCulture);
+            csv.WriteRecords(records);
+        }
+        csvFileStream.Position = 1; //reset stream
+
+
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         //加载这个 Excel 文件
         ExcelPackage package = new ExcelPackage(fileStream);
@@ -172,6 +192,7 @@
         //也可以直接获取字节数组
         byte[] bytes = package.GetAsByteArray();
 
+
         fileStream.Close();
         fileStream.Dispose();
 
@@ -180,8 +201,9 @@
 
         //string textStrings = package.ToString();
         //调用下面的方法输出到浏览器下载
-        OutputClient(savePath, bytes);
-
+        //OutputClient(savePath, bytes);
+        byte[] csvBytes = WriteCsvToMemory(records);
+        OutputCSVClient(csvBytes);
         worksheet.Dispose();
         package.Dispose();
         _toastService.ShowSuccess("导出Excel成功!!");
@@ -194,45 +216,26 @@
             "AacQcRecordList.xlsx",
             Convert.ToBase64String(bytes)
             );
-        //Microsoft.AspNetCore.Mvc.FileStreamResult();
-        //_httpContext.HttpContext.Response.ContentType = "application/x-download";
-        //_httpContext.HttpContext.Response.Headers.Add("Content-Disposition", "attachment; filename=" + System.IO.Path.GetFileName(fileString));
-        //_httpContext.HttpContext.Response.Clear();
-        //_httpContext.HttpContext.Response.WriteAsync(fileString);
-        //_httpContext.HttpContext.Response.Body.Dispose();
-        //var write = response.BodyWriter;
-        //httpContext.Response.OnStarting(() =>
-        //{
-        //    httpContext.Response.Headers.Clear();
-        //    httpContext.Response.Headers.Add("Content-Disposition", string.Format("attachment; filename={0}.xlsx", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")));
-        //    httpContext.Response.Headers.Append("Content-Type", "text/html; charset=GB2312");
-        //    return Task.FromResult(0);
-        //});
-        //response.StartAsync();
+    }
 
+    public void OutputCSVClient(byte[] bytes)
+    {
+        _iJSRuntime.InvokeAsync<object>(
+            "SaveAsFile",
+            "AacQcRecordList.csv",
+            Convert.ToBase64String(bytes)
+            );
+    }
 
-        //response.ClearHeaders();
-        //response.ClearContent();
-
-        //response.ContentType = "application/ms-excel";
-        //response.OnStarting();
-        //response.AppendHeader("Content-Type", "text/html; charset=GB2312");
-        //response.AddHeader("Content-Disposition", string.Format("attachment; filename={0}.xlsx", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")));
-        //httpContext.Response.Headers.Add("Content-Disposition", string.Format("attachment; filename={0}.xlsx", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")));
-        //httpContext.Response.Headers.Append("Content-Type", "text/html; charset=GB2312");
-        //response.Charset = "GB2312";
-        //response.ContentEncoding = Encoding.GetEncoding("GB2312");
-        //httpContext.Response.ContentType = "application/vnd.openxmlformats - officedocument.spreadsheetml.sheet";
-
-        //foreach (var b in bytes)
-        //{
-        //    httpContext.Response.Body.WriteByte(b);
-        //}
-        ////AsyncCallback asyncCallback;
-        ////response.Body.BeginWrite(bytes, 0, int.MaxValue); //WriteAsync(textString).GetAwaiter();
-        ////response.BinaryWrite(bytes);
-        //httpContext.Response.Body.Flush();
-
-        //httpContext.Response.Body.Dispose();
+    public byte[] WriteCsvToMemory(dynamic records)
+    {
+        using (var memoryStream = new MemoryStream())
+        using (var streamWriter = new StreamWriter(memoryStream))
+        using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+        {
+            csvWriter.WriteRecords(records);
+            streamWriter.Flush();
+            return memoryStream.ToArray();
+        }
     }
 }

@@ -8,9 +8,12 @@ namespace BlazorServer.Models
 {
     public class ExcelModels
     {
-        public ExcelModels()
-        {
-        }
+        public string MouldId { get; set; }
+        public string WallId { get; set; }
+        public string SliceId { get; set; }
+        public bool QcResult { get; set; }
+        public string FailureReason { get; set; }
+        public DateTime QcTime { get; set; }
 
         public Dictionary<int, string> ColumeHeadName = new Dictionary<int, string>()
         {
@@ -20,8 +23,6 @@ namespace BlazorServer.Models
             { 4, "QC结果"},
             { 5, "QC时间"}
         };
-
-
     }
     
 }

@@ -12,6 +12,7 @@ namespace BlazorServer.Models
         public string QcResult { get; set; }
         public string RemakeSlice { get; set; }
         public string RemakeCount { get; set; }
+        public string FailureReason { get; set; }
         public DateTime QcTime { get; set; }
     }
 }

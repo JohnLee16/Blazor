@@ -8,5 +8,8 @@ namespace BlazorServer.Data
     {
         HttpClient ApiClient { get; }
         List<AacQcCheckData> GetQCControllerData(string hours);
+        string GetQCControllerGreencake();
+        void SendRelocateIntegrationEvent(RelocatedSliceModel relocatedSliceModel);
+        void SendToBufferIntegrationEvent(SendBufferModel sendBufferModel);
     }
 }

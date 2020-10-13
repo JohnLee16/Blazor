@@ -6,6 +6,7 @@
 @using BlazorServer.Data
 @inject IHttpBufferAPI HttpBuffer
 @inject IHttpManagerAPI HttpManager
+@inject IHttpControllerAPI HttpController
 <h1>暂存区状态</h1>
 <p>This component is for buffer status view.</p>
 
@@ -37,16 +38,32 @@ else
         </tbody>
     </table>
 }
+<EditForm Model="sendBufferModel" OnValidSubmit="@SendToBufferSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />    
+    <h5></h5>
+    <label class="display-1">请输入ProductId: </label>
+    <InputText id=@sendBuffferproductId @bind-Value="sendBuffferproductId"></InputText>
+    <label class="display-2" >请输入TrayId: </label>
+    <InputText id=@sendBuffertrayId @bind-Value="sendBuffertrayId"></InputText>
+    <h5></h5>
+    <button type="submit" class="btn btn-primary">
+        发送至暂存工位
+    </button>
+</EditForm>
 
 @code
 {
     private List<BufferData> bufferStatus = new List<BufferData>();
+    BlazorServer.Models.SendBufferModel sendBufferModel = new Models.SendBufferModel();
+    private string sendBuffferproductId;
+    private string sendBuffertrayId;
 
     protected override async Task OnInitializedAsync()
     {
         var bufferResponse = HttpBuffer.GetBufferRealTimeStatus();
         var managerResponse = HttpManager.GetBufferRepositoryStatus();
-        //var bufferAsset = HttpManager.GetBufferAsset();
+        var bufferAsset = HttpManager.GetBufferAsset();
         for (int i = 0; i < bufferResponse.Count; i++)
         {
             BufferData tempData = new BufferData
@@ -54,7 +71,7 @@ else
                 bufferStationId = "暂存" + (i + 1).ToString() + "工位",
                 bufferStationRealTimeStatus = bufferResponse[i],
                 bufferStationStatus = i < 9 ? managerResponse[i] : false,
-                bufferStationAsset = null//i < 9 ? bufferAsset[i] : null
+                bufferStationAsset = i < 9 ? bufferAsset[i] : null
             };
             bufferStatus.Add(tempData);
         }
@@ -66,5 +83,15 @@ else
         public bool bufferStationStatus { get; set; }
         public bool bufferStationRealTimeStatus { get; set; }
         public string bufferStationAsset { get; set; }
+    }
+
+    private void SendToBufferSubmit()
+    {
+        sendBufferModel = new Models.SendBufferModel
+        {
+            ProductId = sendBuffferproductId,
+            TrayId = sendBuffertrayId
+        };
+        HttpController.SendToBufferIntegrationEvent(sendBufferModel);
     }
 }

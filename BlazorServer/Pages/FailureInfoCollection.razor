@@ -1,0 +1,162 @@
+﻿@page "/failureInfoCollection"
+@using BlazorServer.Data
+
+@using BlazorServer.Models
+
+@inject IHttpControllerAPI _controllerAPI
+<h3>坏砖信息收集</h3>
+
+
+
+<style>
+    .orange-panel {
+        background-color: orange;
+    }
+
+    .orange-panel .title {
+        border-bottom: 1px solid #333;
+        height: 30px;
+    }
+
+    .orange-panel .content {
+    }
+</style>
+
+<EditForm Model="failureSliceModel" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="bg-dark"></div>
+    <h4>输入坏砖原因：</h4>
+    @if (currentQcData == null)
+    {
+        <p><em>Can Not Connect to Controller...    Loading...</em></p>
+    }
+    else
+    {
+        @for (int i = 0; i < currentQcData.Slices.Count; i++)
+        {
+            <text>@currentQcData.Slices[i].slicesId</text>
+            if (i == 0)
+            {
+                <InputText id=@failureInfo1 @bind-Value="failureInfo1"></InputText>
+            }
+            else if (i == 1)
+            {
+                <InputText id=@failureInfo2 @bind-Value="failureInfo2"></InputText>
+            }
+            else if (i == 2)
+            {
+                <InputText id=@failureInfo3 @bind-Value="failureInfo3"></InputText>
+            }
+            else if (i == 3)
+            {
+                <InputText id=@failureInfo4 @bind-Value="failureInfo4"></InputText>
+            }
+            @*<input type="text" class="form-control"
+                value="@failureSliceModel.FailureInfos[currentQcData.Slices[i].slicesId]" @onchange="@((ChangeEventArgs __e) => failureSliceModel.FailureInfos[currentQcData.Slices[i].slicesId] = __e.Value.ToString())" />*@
+            <h3></h3>
+        }
+
+        <button type="submit" class="btn btn-primary">提交</button>
+        <h1></h1>
+    }
+
+</EditForm>
+
+<EditForm Model="relocatedSliceModel" OnValidSubmit="@RelocateSliceRequestSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText id=@relocateSlice1 @bind-Value="relocateSlice1"></InputText>
+    <InputText id=@relocateSlice2 @bind-Value="relocateSlice2"></InputText>
+    <InputText id=@relocateSlice3 @bind-Value="relocateSlice3"></InputText>
+    <h5></h5>
+    <label>请输入ProductId: </label>
+    <InputText id=@relocateProductId @bind-Value="relocateProductId"></InputText>
+    <h5></h5>
+    <button type="submit" class="btn btn-primary">
+        插砖请求提交
+    </button>
+</EditForm>
+
+
+@code {
+    private string failureInfo1;
+    private string failureInfo2;
+    private string failureInfo3;
+    private string failureInfo4;
+    private string currentSliceId;
+    private string relocateSlice1;
+    private string relocateSlice2;
+    private string relocateSlice3;
+    private string relocateProductId;
+    private string[] failureInfoList;
+    private List<AacQcCheckData> qcSlicesData = new List<AacQcCheckData>();
+    private AacQcCheckData currentQcData;
+    FailureSliceModel failureSliceModel = new FailureSliceModel();
+    RelocatedSliceModel relocatedSliceModel = new RelocatedSliceModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        qcSlicesData = _controllerAPI.GetQCControllerData(100.ToString());
+        currentQcData = qcSlicesData[qcSlicesData.Count - 1];
+        failureSliceModel.FailureInfos = new Dictionary<string, string>();
+        relocatedSliceModel.RemakePassedSliceId = new List<string>();
+        foreach (var slice in currentQcData.Slices)
+        {
+            failureSliceModel.FailureInfos.Add(slice.slicesId, "无");
+        }
+    }
+
+
+    private void HandleValidSubmit()
+    {
+        for (int i = 0; i < currentQcData.Slices.Count; i++)
+        {
+            switch (i)
+            {
+                case 0:
+                    failureSliceModel.FailureInfos[currentQcData.Slices[i].slicesId] = failureInfo1;
+                    break;
+                case 1:
+                    failureSliceModel.FailureInfos[currentQcData.Slices[i].slicesId] = failureInfo2;
+                    break;
+                case 2:
+                    failureSliceModel.FailureInfos[currentQcData.Slices[i].slicesId] = failureInfo3;
+                    break;
+                case 3:
+                    failureSliceModel.FailureInfos[currentQcData.Slices[i].slicesId] = failureInfo4;
+                    break;
+            }
+        }
+    }
+
+    private void RelocateSliceRequestSubmit()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            switch (i)
+            {
+                case 0:
+                    relocatedSliceModel.RemakePassedSliceId.Add(relocateSlice1);
+                    break;
+                case 1:
+                    relocatedSliceModel.RemakePassedSliceId.Add(relocateSlice2);
+                    break;
+                case 2:
+                    relocatedSliceModel.RemakePassedSliceId.Add(relocateSlice3);
+                    break;
+            }
+        }
+        foreach (var relocateSlice in relocatedSliceModel.RemakePassedSliceId)
+        {
+            if (relocateSlice != null)
+            {
+                relocatedSliceModel.ProductId = relocateProductId;
+                relocatedSliceModel.StationId = "AacQc_Station_1";
+                relocatedSliceModel.TrayId = "manual_tray";
+            }
+        }
+        _controllerAPI.SendRelocateIntegrationEvent(relocatedSliceModel);
+    }
+}
