@@ -2,7 +2,7 @@
     var link = document.createElement('a');
     link.download = fileName;
     
-    link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; base64,' + byteBase64;
+    link.href = 'data:application/octet-stream; base64,' + byteBase64;//vnd.openxmlformats-officedocument.spreadsheetml.sheet
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
