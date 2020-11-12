@@ -4,8 +4,8 @@
 @using BlazorServer.Models
 
 @inject IHttpControllerAPI _controllerAPI
-<h3>坏砖信息收集</h3>
-
+<h1>坏砖信息收集</h1>
+<p class="alert-dark">This component is a collection view of fail slices.</p>
 
 
 <style>
@@ -21,12 +21,13 @@
     .orange-panel .content {
     }
 </style>
+<h1>
 
+</h1>
 <EditForm Model="failureSliceModel" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-    <div class="bg-dark"></div>
-    <h4>输入坏砖原因：</h4>
+    <h4 class="bg-danger">输入坏砖原因：</h4>
     @if (currentQcData == null)
     {
         <p><em>Can Not Connect to Controller...    Loading...</em></p>
@@ -66,12 +67,12 @@
 <EditForm Model="relocatedSliceModel" OnValidSubmit="@RelocateSliceRequestSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-
+    <label class="bg-info">请输入relocateSliceId: </label>
     <InputText id=@relocateSlice1 @bind-Value="relocateSlice1"></InputText>
     <InputText id=@relocateSlice2 @bind-Value="relocateSlice2"></InputText>
     <InputText id=@relocateSlice3 @bind-Value="relocateSlice3"></InputText>
     <h5></h5>
-    <label>请输入ProductId: </label>
+    <label class="bg-info">请输入ProductId: </label>
     <InputText id=@relocateProductId @bind-Value="relocateProductId"></InputText>
     <h5></h5>
     <button type="submit" class="btn btn-primary">

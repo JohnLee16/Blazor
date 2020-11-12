@@ -21,7 +21,7 @@
 @inject IToastService _toastService
 @inject IHttpContextAccessor _httpContext
 
-<h3>QC 数据查看</h3>
+<h1>QC 数据查看</h1>
 
 <EditForm Model="searchModel" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -38,10 +38,10 @@
     <table class="table">
         <thead>
             <tr>
-                <th>模具Id</th>
-                <th>墙Id</th>
-                <th>砖Id</th>
-                <th>检测结果</th>
+                <th class="bg-info">模具Id</th>
+                <th class="bg-danger">墙Id</th>
+                <th class="bg-light">砖Id</th>
+                <th class="bg-secondary">检测结果</th>
                 <th>检测时间</th>
             </tr>
         </thead>
